@@ -45,7 +45,11 @@ class Fixture:
         self.away_team = Team(data_dict['awayTeam'])
         self.competition = data_dict['league']['name']
         self.status = data_dict['statusShort']
-        
+    
+    @property
+    def inactive(self):
+        return self.status in ('PST', 'CANC', 'ABD', 'AWD', 'WO')
+
     @property
     def is_today(self):
         """Checks whether a fixture is taking place on the current day.
@@ -56,7 +60,7 @@ class Fixture:
         """
         return (
             self.datetime.date() == datetime.now().date()
-            and self.status not in ('PST', 'CANC', 'ABD', 'AWD', 'WO')
+            and not self.inactive
         )
     
     @property
@@ -88,7 +92,10 @@ class Fixture:
             us, them = 'Away', 'Home'
         else:
             raise ValueError('Team not involved')
-            
+        
+        if self.inactive:
+            return ':black_circle:'
+
         if self._data[f'goals{us}Team'] > self._data[f'goals{them}Team']:
             return ':blue_circle:'
         elif self._data[f'goals{us}Team'] < self._data[f'goals{them}Team']:
@@ -99,8 +106,11 @@ class Fixture:
 
 def get_active_fixtures():
     current_matches = []
+    seen_teams = []
 
     for team in Fixture.BADGE_LOOKUPS.keys():
+        if team in seen_teams:
+            continue
         next_fix_url = f'https://api-football-v1.p.rapidapi.com/v2/fixtures/team/{team}/next/1'
 
         fix_req = Request(next_fix_url, headers=HEADERS)
@@ -109,7 +119,9 @@ def get_active_fixtures():
         
         data = json.loads(fix_content)
         fix = Fixture(data['api']['fixtures'][0])
-        if fix.is_today and not fix.description in current_matches:
+        if fix.is_today:
             current_matches.append(fix.description)
+        
+        seen_teams.extend([fix.home_team.id, fix.away_team.id])
 
     return current_matches
