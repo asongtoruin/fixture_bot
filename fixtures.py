@@ -11,7 +11,22 @@ class Team:
     def __init__(self, team_data):
         self.name = team_data['team_name']
         self.id = team_data['team_id']
+        
+    def form(self, matches=5):
+        form_url = (
+            f'https://api-football-v1.p.rapidapi.com/v2/fixtures/team/'
+            f'{self.id}/last/{matches}'
+        )
 
+        # Load up the fixtures
+        form_req = Request(form_url, headers=HEADERS)
+        form_content = urlopen(form_req).read()
+        data = json.loads(form_content)
+        
+        return ''.join(Fixture(f).result(self) for f in data['api']['fixtures'])
+        
+    def __eq__(self, other):
+        return self.id == other.id
         
 class Fixture:
     BADGE_LOOKUPS = {
@@ -24,6 +39,7 @@ class Fixture:
         41: ':sfc:',      # Southampton
     }
     def __init__(self, data_dict):
+        self._data = data_dict
         self.datetime = datetime.fromtimestamp(data_dict['event_timestamp'])
         self.home_team = Team(data_dict['homeTeam'])
         self.away_team = Team(data_dict['awayTeam'])
@@ -53,11 +69,32 @@ class Fixture:
         home_msg = Fixture.BADGE_LOOKUPS.get(
             self.home_team.id, self.home_team.name
         )
+        
+        home_form = self.home_team.form()
         away_msg = Fixture.BADGE_LOOKUPS.get(
             self.away_team.id, self.away_team.name
         )
+        away_form = self.away_team.form()
         start_time = self.datetime.strftime('%H:%M')
-        return f'{home_msg} vs {away_msg} @ {start_time} ({self.competition})'
+        return (
+            f'{home_msg} ({home_form}) vs {away_msg} ({away_form}) '
+            f'@ {start_time} ({self.competition})'
+        )
+    
+    def result(self, team: Team):
+        if self.home_team == team:
+            us, them = 'Home', 'Away'
+        elif self.away_team == team:
+            us, them = 'Away', 'Home'
+        else:
+            raise ValueError('Team not involved')
+            
+        if self._data[f'goals{us}Team'] > self._data[f'goals{them}Team']:
+            return ':blue_circle:'
+        elif self._data[f'goals{us}Team'] < self._data[f'goals{them}Team']:
+            return ':red_circle:'
+        else:
+            return ':yellow_circle:'
 
 
 def get_active_fixtures():
