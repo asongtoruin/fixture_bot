@@ -38,7 +38,7 @@ The Discord parameters are detailed well in the
 API parameters should come from setting up an application with RapidAPI.
 
 ### Posting time
-The default set-up is to post at 10am every day. This is set right at the top
+The default set-up is to post at 8am every day. This is set right at the top
 of `bot.py`, so it should be easy to tweak if necessary.
 
 ### Teams to track

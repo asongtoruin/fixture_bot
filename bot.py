@@ -9,14 +9,15 @@ from fixtures import get_active_fixtures
 
 bot = commands.Bot('!')
 
-POST_TIME = datetime.strptime('10:00', '%H:%M')
+POST_TIME = datetime.strptime('08:00', '%H:%M')
 
 @tasks.loop(hours=24)
 async def post_fixtures():
     message_channel = bot.get_channel(TARGET_CHANNEL_ID)
-    print(f"Got channel {message_channel}")
+    print(f"Got channel {message_channel} @{datetime.now()}")
     current_matches = get_active_fixtures()
     if current_matches:
+        print('Got fixtures, posting...')
         text = (
             ':soccer: :soccer: :soccer:'
             + '\n__**Today\'s Fixtures**__\n' 
@@ -25,6 +26,8 @@ async def post_fixtures():
         )
 
         await message_channel.send(text)
+    else:
+        print('No matches today!')
 
 @post_fixtures.before_loop
 async def time_wait():
