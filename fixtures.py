@@ -30,13 +30,13 @@ class Team:
         
 class Fixture:
     BADGE_LOOKUPS = {
-        42: '\:afc:',      # Arsenal
-        63: '\:leeds:',    # Leeds
-        1373: '\:lofc:',   # Leyton Orient
-        50: '\:mcfc:',     # Manchester City
-        34: '\:nufc:',     # Newcastle
-        1351: '\:pvfc:',   # Port Vale
-        41: '\:sfc:',      # Southampton
+        42: '<:afc:735119993175277578>',      # Arsenal
+        63: '<:leeds:735122574920384542>',    # Leeds
+        1373: '<:lofc:735119992978407525>',   # Leyton Orient
+        50: '<:mcfc:735119993645039676>',     # Manchester City
+        34: '<:nufc:753175503992651826>',     # Newcastle
+        1351: '<:pvfc:735119353367887922>',   # Port Vale
+        41: '<:sfc:735119993510953051>',      # Southampton
     }
     def __init__(self, data_dict):
         self._data = data_dict
