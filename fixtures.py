@@ -28,6 +28,7 @@ class Team:
     def __eq__(self, other):
         return self.id == other.id
         
+
 class Fixture:
     BADGE_LOOKUPS = {
         42: '<:afc:735119993175277578>',      # Arsenal
@@ -36,8 +37,8 @@ class Fixture:
         50: '<:mcfc:735119993645039676>',     # Manchester City
         34: '<:nufc:753175503992651826>',     # Newcastle
         1351: '<:pvfc:735119353367887922>',   # Port Vale
-        75: '<:scfc:761638560281264149>',     # The neighbours
         41: '<:sfc:735119993510953051>',      # Southampton
+        75: '<:scfc:761638560281264149>',     # The neighbours
     }
     def __init__(self, data_dict):
         self._data = data_dict
