@@ -2,7 +2,16 @@ from datetime import datetime
 import json
 from urllib.request import Request, urlopen
 
+from images import TextDraw, scale_from_url
 from params import HEADERS
+
+
+FORM_COLOURS = {
+    'W': (85,172,238,255),
+    'D': (253,203,88,255),
+    'L': (221,46,68,255),
+    'U': (49,55,61,255)
+}
 
 
 class Team:
@@ -11,6 +20,7 @@ class Team:
     def __init__(self, team_data):
         self.name = team_data['team_name']
         self.id = team_data['team_id']
+        self.badge = team_data.get('logo', None)
         
     def form(self, matches=5):
         form_url = (
@@ -45,6 +55,7 @@ class Fixture:
         self.datetime = datetime.fromtimestamp(data_dict['event_timestamp'])
         self.home_team = Team(data_dict['homeTeam'])
         self.away_team = Team(data_dict['awayTeam'])
+        self.venue = data_dict['venue']
         self.competition = data_dict['league']['name']
         self.status = data_dict['statusShort']
     
@@ -96,14 +107,112 @@ class Fixture:
             raise ValueError('Team not involved')
         
         if self.inactive:
-            return ':black_circle:'
+            return 'U'
 
         if self._data[f'goals{us}Team'] > self._data[f'goals{them}Team']:
-            return ':blue_circle:'
+            return 'W'
         elif self._data[f'goals{us}Team'] < self._data[f'goals{them}Team']:
-            return ':red_circle:'
+            return 'L'
         else:
-            return ':yellow_circle:'
+            return 'D'
+
+    def draw_card(self, font_path, header_height=50, badge_size=200, pad=10, 
+                  inner_gap=60, form_count=10, form_outline=2):
+        form_size = int(badge_size / form_count)
+
+        image_width = 4*pad + 2*badge_size + inner_gap
+        image_height = 4*pad + header_height + badge_size + form_size
+
+        img = Image.new(
+            mode='RGBA', size=(image_width, image_height), color=(0, 0, 0, 0)
+        )
+        draw = ImageDraw.Draw(img)
+
+        text_layer = Image.new(
+            mode='RGBA', size=(image_width, image_height), color=(0, 0, 0, 0)
+        )
+        text_draw = TextDraw(text_layer)
+
+        # Header
+        h_x0 = h_y0 = pad
+        h_x1 = image_width - pad
+        h_y1 = h_y0 + header_height
+        draw.rectangle(xy=[h_x0, h_y0, h_x1, h_y1], fill=(82,50,73), width=4)
+        header = f'{self.competition}\n{self.venue} @ {self.datetime.strftime("%H:%M")}'
+
+        text_draw.align_text(
+            header, h_x0, h_y0+5, h_x1, h_y1-5, font_path=font_path, 
+            align='center'
+        )
+
+        # Home badge
+        hb_x0 = pad
+        hb_x1 = hb_x0 + badge_size
+        hb_y0 = h_y1 + pad
+        hb_y1 = hb_y0 + badge_size
+        badge, x, y = scale_from_url(
+            self.home_team.badge, hb_x0, hb_y0, hb_x1, hb_y1
+        )
+        img.paste(badge, (x, y), badge.convert('RGBA'))
+
+        # Home form
+        hf_x0 = hb_x0
+        hf_x1 = hb_x1
+        hf_y0 = hb_y1 + pad
+        hf_y1 = hf_y0 + form_size
+
+        for f in self.home_team.form(matches=form_count):
+            hf_x1 = hf_x0 + form_size
+            hf_y1 = hf_y0 + form_size
+            draw.rectangle(
+                xy=[hf_x0, hf_y0, hf_x1, hf_y1], 
+                fill=FORM_COLOURS[f], outline=(0,0,0,0), width=form_outline
+            )
+            text_draw.align_text(
+                f, hf_x0+form_outline, hf_y0+form_outline, 
+                hf_x1-oform_outlinew, hf_y1-form_outline, 
+                font_path=font_path, align='center', fill=(255, 255, 255, 100)
+            )
+            hf_x0 += form_size
+
+        # Away badge
+        ab_x0 = hb_x1 + 2*pad+ inner_gap
+        ab_x1 = ab_x0 + badge_size
+        ab_y0 = hb_y0
+        ab_y1 = hb_y1
+        badge, x, y = scale_from_url(
+            self.away_team.badge, ab_x0, ab_y0, ab_x1, ab_y1
+        )
+        img.paste(badge, (x, y), badge.convert('RGBA'))
+
+        # Away form
+        af_x0 = ab_x0
+        af_x1 = ab_x1
+        af_y0 = ab_y1 + pad
+        af_y1 = af_y0 + form_size
+
+        for f in self.away_team.form(matches=form_count):
+            af_x1 = af_x0 + form_size
+            af_y1 = af_y0 + form_size
+            draw.rectangle(
+                xy=[af_x0, af_y0, af_x1, af_y1], 
+                fill=FORM_COLOURS[f], outline=(0,0,0,0), width=form_outline
+            )
+            text_draw.align_text(
+                f, af_x0+form_outline, af_y0+form_outline, 
+                af_x1-oform_outlinew, af_y1-form_outline, 
+                font_path=font_path, align='center', fill=(255, 255, 255, 100)
+            )
+            af_x0 += form_size
+
+        # vs text
+        text_draw.align_text(
+            'VS', hb_x1+pad, hb_y0, ab_x0-pad, ab_y1, font_path=font_path, 
+            align='center', fill=(255, 255, 255, 80)
+        )
+
+        # img.save('hello.png', quality=100)
+        Image.alpha_composite(img, text_layer)
 
 
 def get_active_fixtures():
