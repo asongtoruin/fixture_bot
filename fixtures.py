@@ -34,8 +34,11 @@ class Team:
         form_req = Request(form_url, headers=HEADERS)
         form_content = urlopen(form_req).read()
         data = json.loads(form_content)
+
+        fixtures = [Fixture(f) for f in data['api']['fixtures']]
+        fixtures.sort(key=lambda f: f.datetime)
         
-        return ''.join(Fixture(f).result(self) for f in data['api']['fixtures'])
+        return f.result(self) for f in fixtures
         
     def __eq__(self, other):
         return self.id == other.id
