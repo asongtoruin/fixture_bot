@@ -1,10 +1,12 @@
 import asyncio
 from datetime import datetime
+from io import BytesIO
 
+from discord import File
 from discord.ext import commands, tasks
 
-from params import TARGET_CHANNEL_ID, TOKEN
-from fixtures import get_active_fixtures, Fixture
+from params import TARGET_CHANNEL_ID, TOKEN, FONT_PATH
+from fixtures import draw_active_fixtures, Fixture
 
 
 bot = commands.Bot(
@@ -21,11 +23,11 @@ Fixtures are shown alphabetically for the teams I'm tracking. Those teams are:
 If you want more teams adding, that's very possible :robot:
 
 __**Form**__
-Form is shown by default for the past 5 matches for a team, from most to least 
-recent. Form is shown across all competitions, and does not include penalties 
+Form is shown by default for the past 5 matches for a team, in chronological 
+order. Form is shown across all competitions, and does not include penalties 
 (so, if a match goes to penalties it's recorded as a draw).
 
-The following icons are used:
+The following colours are used:
 :blue_circle: - win
 :red_circle: - loss
 :yellow_circle: - draw
@@ -38,19 +40,12 @@ POST_TIME = datetime.strptime('08:00', '%H:%M')
 async def post_fixtures():
     message_channel = bot.get_channel(TARGET_CHANNEL_ID)
     print(f"Got channel {message_channel} @{datetime.now()}")
-    current_matches = get_active_fixtures()
-    if current_matches:
-        print('Got fixtures, posting...')
-        text = (
-            ':soccer: :soccer: :soccer:'
-            + '\n__**Today\'s Fixtures**__\n' 
-            + '\n'.join(current_matches)
-            + '\n:soccer: :soccer: :soccer:'
-        )
+    for img in draw_active_fixtures(font_path=FONT_PATH):
+        arr = BytesIO()
+        img.save(arr, format='PNG')
+        arr.seek(0)
 
-        await message_channel.send(text)
-    else:
-        print('No matches today!')
+        await message_channel.send(file=File(arr, filename='card.png'))
 
 
 @post_fixtures.before_loop
