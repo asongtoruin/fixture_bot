@@ -38,7 +38,7 @@ class Team:
         fixtures = [Fixture(f) for f in data['api']['fixtures']]
         fixtures.sort(key=lambda f: f.datetime)
         
-        return f.result(self) for f in fixtures
+        return (f.result(self) for f in fixtures)
         
     def __eq__(self, other):
         return self.id == other.id
