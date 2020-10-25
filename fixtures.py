@@ -2,6 +2,8 @@ from datetime import datetime
 import json
 from urllib.request import Request, urlopen
 
+from PIL import Image, ImageDraw
+
 from images import TextDraw, scale_from_url
 from params import HEADERS
 
@@ -170,7 +172,7 @@ class Fixture:
             )
             text_draw.align_text(
                 f, hf_x0+form_outline, hf_y0+form_outline, 
-                hf_x1-oform_outlinew, hf_y1-form_outline, 
+                hf_x1-form_outline, hf_y1-form_outline, 
                 font_path=font_path, align='center', fill=(255, 255, 255, 100)
             )
             hf_x0 += form_size
@@ -200,7 +202,7 @@ class Fixture:
             )
             text_draw.align_text(
                 f, af_x0+form_outline, af_y0+form_outline, 
-                af_x1-oform_outlinew, af_y1-form_outline, 
+                af_x1-form_outline, af_y1-form_outline, 
                 font_path=font_path, align='center', fill=(255, 255, 255, 100)
             )
             af_x0 += form_size
@@ -211,12 +213,10 @@ class Fixture:
             align='center', fill=(255, 255, 255, 80)
         )
 
-        # img.save('hello.png', quality=100)
-        Image.alpha_composite(img, text_layer)
+        return Image.alpha_composite(img, text_layer)
 
 
 def get_active_fixtures():
-    current_matches = []
     seen_teams = []
 
     for team in Fixture.BADGE_LOOKUPS.keys():
@@ -233,6 +233,6 @@ def get_active_fixtures():
         if fix.is_today:
             current_matches.append(fix.description)
         
-        seen_teams.extend([fix.home_team.id, fix.away_team.id])
+        yield fix.draw_card(font_path=r'C:\fonts\desktop\Wotfard\Wotfard-Bold.otf')
 
-    return current_matches
+        seen_teams.extend([fix.home_team.id, fix.away_team.id])
