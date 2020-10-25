@@ -143,7 +143,7 @@ class Fixture:
         h_x1 = image_width - pad
         h_y1 = h_y0 + header_height
         draw.rectangle(xy=[h_x0, h_y0, h_x1, h_y1], fill=(82,50,73), width=4)
-        header = f'{self.competition}\n{self.venue} @ {self.datetime.strftime("%H:%M")}'
+        header = f'{self.competition}\n{self.venue or ""} @ {self.datetime.strftime("%H:%M")}'
 
         text_draw.align_text(
             header, h_x0, h_y0+5, h_x1, h_y1-5, font_path=font_path, 
