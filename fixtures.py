@@ -219,12 +219,10 @@ class Fixture:
         return Image.alpha_composite(img, text_layer)
 
 
-def get_active_fixtures():
+def draw_active_fixtures(font_path):
     seen_teams = []
 
     for team in Fixture.BADGE_LOOKUPS.keys():
-        if team in seen_teams:
-            continue
         next_fix_url = f'https://api-football-v1.p.rapidapi.com/v2/fixtures/team/{team}/next/1'
 
         fix_req = Request(next_fix_url, headers=HEADERS)
@@ -233,9 +231,14 @@ def get_active_fixtures():
         
         data = json.loads(fix_content)
         fix = Fixture(data['api']['fixtures'][0])
-        if fix.is_today:
-            current_matches.append(fix.description)
-        
-        yield fix.draw_card(font_path=r'C:\fonts\desktop\Wotfard\Wotfard-Bold.otf')
 
-        seen_teams.extend([fix.home_team.id, fix.away_team.id])
+        home = fix.home_team.id
+        away = fix.away_team.id
+
+        if (home, away) in seen_teams:
+            continue
+
+        if fix.is_today:
+            yield fix.draw_card(font_path=font_path)
+
+        seen_teams.append((home, away))
