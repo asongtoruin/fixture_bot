@@ -86,7 +86,6 @@ def scale_from_url(url, x0, y0, x1, y1, blur_size=3):
     img = img.crop(img.getbbox())
     
     img_w, img_h = img.size
-    print(w, img_w, h, img_h)
 
     if img_w >= img_h:
         new_w = w
