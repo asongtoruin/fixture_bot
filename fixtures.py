@@ -122,7 +122,7 @@ class Fixture:
             return 'D'
 
     def draw_card(self, font_path, header_height=50, badge_size=200, pad=10, 
-                  inner_gap=60, form_count=10, form_outline=2):
+                  inner_gap=60, form_count=10, form_outline=2, text_scale=10):
         form_size = int(badge_size / form_count)
 
         image_width = 4*pad + 2*badge_size + inner_gap
@@ -133,8 +133,11 @@ class Fixture:
         )
         draw = ImageDraw.Draw(img)
 
+        # Separate text layer, scaled up for better antialiasing
         text_layer = Image.new(
-            mode='RGBA', size=(image_width, image_height), color=(0, 0, 0, 0)
+            mode='RGBA', 
+            size=(image_width * text_scale, image_height * text_scale), 
+            color=(0, 0, 0, 0)
         )
         text_draw = TextDraw(text_layer)
 
@@ -146,8 +149,10 @@ class Fixture:
         header = f'{self.competition}\n{self.venue or ""} @ {self.datetime.strftime("%H:%M")}'
 
         text_draw.align_text(
-            header, h_x0, h_y0+5, h_x1, h_y1-5, font_path=font_path, 
-            align='center'
+            header, 
+            h_x0 * text_scale, (h_y0+5) * text_scale, 
+            h_x1 * text_scale, (h_y1-5) * text_scale, 
+            font_path=font_path, align='center'
         )
 
         # Home badge
@@ -174,8 +179,9 @@ class Fixture:
                 fill=FORM_COLOURS[f], outline=(0,0,0,0), width=form_outline
             )
             text_draw.align_text(
-                f, hf_x0+form_outline, hf_y0+form_outline, 
-                hf_x1-form_outline, hf_y1-form_outline, 
+                f, 
+                (hf_x0+form_outline)*text_scale, (hf_y0+form_outline)*text_scale, 
+                (hf_x1-form_outline)*text_scale, (hf_y1-form_outline)*text_scale, 
                 font_path=font_path, align='center', fill=(255, 255, 255, 100)
             )
             hf_x0 += form_size
@@ -204,17 +210,23 @@ class Fixture:
                 fill=FORM_COLOURS[f], outline=(0,0,0,0), width=form_outline
             )
             text_draw.align_text(
-                f, af_x0+form_outline, af_y0+form_outline, 
-                af_x1-form_outline, af_y1-form_outline, 
+                f, 
+                (af_x0+form_outline)*text_scale, (af_y0+form_outline)*text_scale, 
+                (af_x1-form_outline)*text_scale, (af_y1-form_outline)*text_scale, 
                 font_path=font_path, align='center', fill=(255, 255, 255, 100)
             )
             af_x0 += form_size
 
         # vs text
         text_draw.align_text(
-            'VS', hb_x1+pad, hb_y0, ab_x0-pad, ab_y1, font_path=font_path, 
-            align='center', fill=(255, 255, 255, 80)
+            'VS', 
+            (hb_x1+pad) * text_scale, hb_y0 * text_scale, 
+            (ab_x0-pad) * text_scale, ab_y1 * text_scale, 
+            font_path=font_path, align='center', fill=(255, 255, 255, 80)
         )
+
+        # Scale down image
+        text_layer = text_layer.resize((image_width, image_height))
 
         return Image.alpha_composite(img, text_layer)
 
