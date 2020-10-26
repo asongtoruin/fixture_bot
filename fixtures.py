@@ -151,7 +151,7 @@ class Fixture:
         text_draw = TextDraw(text_layer)
 
         # Header fill
-        h_colour = DAY_COLOURS.get(self.datetime.day(), DAY_COLOURS[0])
+        h_colour = DAY_COLOURS.get(self.datetime.weekday(), DAY_COLOURS[0])
         h_x0 = h_y0 = pad
         h_x1 = image_width - pad
         h_y1 = h_y0 + header_height
