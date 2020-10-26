@@ -242,7 +242,7 @@ class Fixture:
         return Image.alpha_composite(img, text_layer)
 
 
-def draw_active_fixtures(font_path):
+def draw_active_fixtures(font_path, today_only=True):
     seen_teams = []
 
     for team in Fixture.BADGE_LOOKUPS.keys():
@@ -261,7 +261,7 @@ def draw_active_fixtures(font_path):
         if (home, away) in seen_teams:
             continue
 
-        if fix.is_today:
+        if fix.is_today or not today_only:
             yield fix.draw_card(font_path=font_path)
 
         seen_teams.append((home, away))
