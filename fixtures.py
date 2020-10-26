@@ -15,6 +15,15 @@ FORM_COLOURS = {
     'U': (49,55,61,255)
 }
 
+DAY_COLOURS = {
+    0: (2, 8, 135, 255),
+    1: (1, 38, 34, 255),
+    2: (229, 83, 129, 255),
+    3: (20, 123, 49, 255),
+    4: (91, 78, 119, 255),
+    5: (243, 66, 19, 255),
+    6: (229, 83, 129, 255)
+}
 
 class Team:
     """Data class for team data
@@ -141,13 +150,15 @@ class Fixture:
         )
         text_draw = TextDraw(text_layer)
 
-        # Header
+        # Header fill
+        h_colour = DAY_COLOURS.get(self.datetime.day(), DAY_COLOURS[0])
         h_x0 = h_y0 = pad
         h_x1 = image_width - pad
         h_y1 = h_y0 + header_height
-        draw.rectangle(xy=[h_x0, h_y0, h_x1, h_y1], fill=(82,50,73), width=4)
-        header = f'{self.competition}\n{self.venue or ""} @ {self.datetime.strftime("%H:%M")}'
+        draw.rectangle(xy=[h_x0, h_y0, h_x1, h_y1], fill=h_colour, width=4)
 
+        # Header text
+        header = f'{self.competition}\n{self.venue or ""} @ {self.datetime.strftime("%H:%M")}'
         text_draw.align_text(
             header, 
             h_x0 * text_scale, (h_y0+5) * text_scale, 
@@ -222,7 +233,7 @@ class Fixture:
             'VS', 
             (hb_x1+pad) * text_scale, hb_y0 * text_scale, 
             (ab_x0-pad) * text_scale, ab_y1 * text_scale, 
-            font_path=font_path, align='center', fill=(255, 255, 255, 80)
+            font_path=font_path, align='center', fill=(127, 127, 127, 80)
         )
 
         # Scale down image
