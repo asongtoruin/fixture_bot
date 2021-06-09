@@ -132,7 +132,10 @@ class Fixture:
 
     def draw_card(self, font_path, header_height=50, badge_size=200, pad=10, 
                   inner_gap=60, form_count=10, form_outline=2, text_scale=10):
-        form_size = int(badge_size / form_count)
+        if form_count > 0:
+            form_size = int(badge_size / form_count)
+        else:
+            form_size = 0
 
         image_width = 4*pad + 2*badge_size + inner_gap
         image_height = 4*pad + header_height + badge_size + form_size
@@ -176,26 +179,27 @@ class Fixture:
         )
         img.paste(badge, (x, y), badge.convert('RGBA'))
 
-        # Home form
-        hf_x0 = hb_x0
-        hf_x1 = hb_x1
-        hf_y0 = hb_y1 + pad
-        hf_y1 = hf_y0 + form_size
-
-        for f in self.home_team.form(matches=form_count):
-            hf_x1 = hf_x0 + form_size
+        if form_count > 0:
+            # Home form
+            hf_x0 = hb_x0
+            hf_x1 = hb_x1
+            hf_y0 = hb_y1 + pad
             hf_y1 = hf_y0 + form_size
-            draw.rectangle(
-                xy=[hf_x0, hf_y0, hf_x1, hf_y1], 
-                fill=FORM_COLOURS[f], outline=(0,0,0,0), width=form_outline
-            )
-            text_draw.align_text(
-                f, 
-                (hf_x0+form_outline)*text_scale, (hf_y0+form_outline)*text_scale, 
-                (hf_x1-form_outline)*text_scale, (hf_y1-form_outline)*text_scale, 
-                font_path=font_path, align='center', fill=(255, 255, 255, 100)
-            )
-            hf_x0 += form_size
+
+            for f in self.home_team.form(matches=form_count):
+                hf_x1 = hf_x0 + form_size
+                hf_y1 = hf_y0 + form_size
+                draw.rectangle(
+                    xy=[hf_x0, hf_y0, hf_x1, hf_y1], 
+                    fill=FORM_COLOURS[f], outline=(0,0,0,0), width=form_outline
+                )
+                text_draw.align_text(
+                    f, 
+                    (hf_x0+form_outline)*text_scale, (hf_y0+form_outline)*text_scale, 
+                    (hf_x1-form_outline)*text_scale, (hf_y1-form_outline)*text_scale, 
+                    font_path=font_path, align='center', fill=(255, 255, 255, 100)
+                )
+                hf_x0 += form_size
 
         # Away badge
         ab_x0 = hb_x1 + 2*pad+ inner_gap
@@ -207,26 +211,27 @@ class Fixture:
         )
         img.paste(badge, (x, y), badge.convert('RGBA'))
 
-        # Away form
-        af_x0 = ab_x0
-        af_x1 = ab_x1
-        af_y0 = ab_y1 + pad
-        af_y1 = af_y0 + form_size
-
-        for f in self.away_team.form(matches=form_count):
-            af_x1 = af_x0 + form_size
+        if form_count > 0:
+            # Away form
+            af_x0 = ab_x0
+            af_x1 = ab_x1
+            af_y0 = ab_y1 + pad
             af_y1 = af_y0 + form_size
-            draw.rectangle(
-                xy=[af_x0, af_y0, af_x1, af_y1], 
-                fill=FORM_COLOURS[f], outline=(0,0,0,0), width=form_outline
-            )
-            text_draw.align_text(
-                f, 
-                (af_x0+form_outline)*text_scale, (af_y0+form_outline)*text_scale, 
-                (af_x1-form_outline)*text_scale, (af_y1-form_outline)*text_scale, 
-                font_path=font_path, align='center', fill=(255, 255, 255, 100)
-            )
-            af_x0 += form_size
+
+            for f in self.away_team.form(matches=form_count):
+                af_x1 = af_x0 + form_size
+                af_y1 = af_y0 + form_size
+                draw.rectangle(
+                    xy=[af_x0, af_y0, af_x1, af_y1], 
+                    fill=FORM_COLOURS[f], outline=(0,0,0,0), width=form_outline
+                )
+                text_draw.align_text(
+                    f, 
+                    (af_x0+form_outline)*text_scale, (af_y0+form_outline)*text_scale, 
+                    (af_x1-form_outline)*text_scale, (af_y1-form_outline)*text_scale, 
+                    font_path=font_path, align='center', fill=(255, 255, 255, 100)
+                )
+                af_x0 += form_size
 
         # vs text
         text_draw.align_text(
@@ -271,3 +276,20 @@ def draw_active_fixtures(font_path, today_only=True):
             yield fix.draw_card(font_path=font_path)
 
         seen_teams.append((home, away))
+
+def draw_competition_fixtures(font_path, league_id, form_count=0):
+
+    date = datetime.now().strftime('%Y-%m-%d')
+
+    next_fix_url = f'https://api-football-v1.p.rapidapi.com/v2/fixtures/league/{league_id}/{date}'
+                     
+    fix_req = Request(next_fix_url, headers=HEADERS)
+    
+    fix_content = urlopen(fix_req).read()
+    
+    data = json.loads(fix_content)
+
+    for f in data['api']['fixtures']:
+        fix = Fixture(f)
+
+        yield fix.draw_card(font_path=font_path, form_count=form_count)
