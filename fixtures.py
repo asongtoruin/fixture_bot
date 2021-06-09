@@ -253,7 +253,13 @@ def draw_active_fixtures(font_path, today_only=True):
         fix_content = urlopen(fix_req).read()
         
         data = json.loads(fix_content)
-        fix = Fixture(data['api']['fixtures'][0])
+        
+        fixtures = data['api']['fixtures']
+        
+        if not fixtures:
+            continue
+        
+        fix = Fixture(fixtures[0])
 
         home = fix.home_team.id
         away = fix.away_team.id
