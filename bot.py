@@ -6,7 +6,7 @@ from discord import File
 from discord.ext import commands, tasks
 
 from params import TARGET_CHANNEL_ID, TOKEN, FONT_PATH
-from fixtures import draw_active_fixtures, Fixture
+from fixtures import draw_competition_fixtures, Fixture
 
 
 bot = commands.Bot(
@@ -15,23 +15,7 @@ bot = commands.Bot(
 )
 
 
-help_text = f'''I post fixtures for predefined teams at 8am each day.
-
-__**Teams**__
-Fixtures are shown alphabetically for the teams I'm tracking. Those teams are:
-{', '.join(Fixture.BADGE_LOOKUPS.values())}
-If you want more teams adding, that's very possible :robot:
-
-__**Form**__
-Form is shown by default for the past 5 matches for a team, in chronological 
-order. Form is shown across all competitions, and does not include penalties 
-(so, if a match goes to penalties it's recorded as a draw).
-
-The following colours are used:
-:blue_circle: - win
-:red_circle: - loss
-:yellow_circle: - draw
-:black_circle: - match postponed / cancelled / other.
+help_text = f'''IT'S THE EUROPEAN CHAMPIONSHIPS. GET EXCITED.
 '''
 
 POST_TIME = datetime.strptime('08:00', '%H:%M')
@@ -40,7 +24,7 @@ POST_TIME = datetime.strptime('08:00', '%H:%M')
 async def post_fixtures():
     message_channel = bot.get_channel(TARGET_CHANNEL_ID)
     print(f"Got channel {message_channel} @{datetime.now()}")
-    for img in draw_active_fixtures(font_path=FONT_PATH):
+    for img in draw_competition_fixtures(font_path=FONT_PATH, league_id=403):
         arr = BytesIO()
         img.save(arr, format='PNG')
         arr.seek(0)
