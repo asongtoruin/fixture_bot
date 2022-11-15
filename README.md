@@ -17,7 +17,7 @@ third-party Python modules.
 
 ## Setting up parameters
 ### Functional requirements
-The bot relies on a `params.py` file that the `.gitignore` deliberately excludes
+The bot relies on a `params.py` file within the `code` directory that the `.gitignore` deliberately excludes
 as these values should be kept secret. The file should look as follows (this
 example here uses dummy values):
 

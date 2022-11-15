@@ -5,8 +5,8 @@ from io import BytesIO
 from discord import File
 from discord.ext import commands, tasks
 
-from params import TARGET_CHANNEL_ID, TOKEN, FONT_PATH
-from fixtures import draw_competition_fixtures, Fixture
+from code.params import TARGET_CHANNEL_ID, TOKEN, FONT_PATH
+from code.fixtures import draw_competition_fixtures, Fixture
 
 
 bot = commands.Bot(

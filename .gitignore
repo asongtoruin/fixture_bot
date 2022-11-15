@@ -130,4 +130,4 @@ dmypy.json
 
 # Project-specific
 .vscode/
-params.py
+code/params.py

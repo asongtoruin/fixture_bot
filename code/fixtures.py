@@ -4,8 +4,8 @@ from urllib.request import Request, urlopen
 
 from PIL import Image, ImageDraw
 
-from images import TextDraw, scale_from_url
-from params import HEADERS
+from .images import TextDraw, scale_from_url
+from .params import HEADERS
 
 
 FORM_COLOURS = {
