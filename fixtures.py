@@ -122,13 +122,16 @@ class Fixture:
         
         if self.inactive:
             return 'U'
-
-        if self._data[f'goals{us}Team'] > self._data[f'goals{them}Team']:
-            return 'W'
-        elif self._data[f'goals{us}Team'] < self._data[f'goals{them}Team']:
-            return 'L'
-        else:
-            return 'D'
+        
+        try:
+            if self._data[f'goals{us}Team'] > self._data[f'goals{them}Team']:
+                return 'W'
+            elif self._data[f'goals{us}Team'] < self._data[f'goals{them}Team']:
+                return 'L'
+            else:
+                return 'D'
+        except TypeError:
+            return 'U'
 
     def draw_card(self, font_path, header_height=50, badge_size=200, pad=10, 
                   inner_gap=60, form_count=10, form_outline=2, text_scale=10):
