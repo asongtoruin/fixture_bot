@@ -4,7 +4,7 @@ from urllib.request import Request, urlopen
 
 from PIL import Image, ImageDraw
 
-from .images import TextDraw, scale_from_url
+from .  images import TextDraw, scale_from_url
 from .params import HEADERS
 
 
@@ -72,7 +72,15 @@ class Fixture:
         self.venue = data_dict['venue']
         self.competition = data_dict['league']['name']
         self.status = data_dict['statusShort']
-    
+
+    def __eq__(self, other):
+        return all([
+            self.datetime == other.datetime,
+            self.home_team == other.away_team,
+            self.venue == other.venue,
+            self.competition == other.competition,
+        ])
+
     @property
     def inactive(self):
         return self.status in ('PST', 'CANC', 'ABD', 'AWD', 'WO')
@@ -279,6 +287,7 @@ def draw_active_fixtures(font_path, today_only=True):
             yield fix.draw_card(font_path=font_path)
 
         seen_teams.append((home, away))
+
 
 def draw_competition_fixtures(font_path, league_id, form_count=0):
 
