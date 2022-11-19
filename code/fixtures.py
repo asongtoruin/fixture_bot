@@ -54,16 +54,6 @@ class Team:
         
 
 class Fixture:
-    BADGE_LOOKUPS = {
-        42: '<:afc:735119993175277578>',      # Arsenal
-        63: '<:leeds:735122574920384542>',    # Leeds
-        1373: '<:lofc:735119992978407525>',   # Leyton Orient
-        50: '<:mcfc:735119993645039676>',     # Manchester City
-        34: '<:nufc:753175503992651826>',     # Newcastle
-        1351: '<:pvfc:735119353367887922>',   # Port Vale
-        41: '<:sfc:735119993510953051>',      # Southampton
-        75: '<:scfc:761638560281264149>',     # The neighbours
-    }
     def __init__(self, data_dict):
         self._data = data_dict
         self.datetime = datetime.fromtimestamp(data_dict['event_timestamp'])
@@ -96,28 +86,6 @@ class Fixture:
         return (
             self.datetime.date() == datetime.now().date()
             and not self.inactive
-        )
-    
-    @property
-    def description(self):
-        """Gives description text for the fixture with emoji codes for given teams 
-
-        Returns:
-            str: match description string including teams, time and competition.
-        """
-        home_msg = Fixture.BADGE_LOOKUPS.get(
-            self.home_team.id, self.home_team.name
-        )
-        
-        home_form = self.home_team.form()
-        away_msg = Fixture.BADGE_LOOKUPS.get(
-            self.away_team.id, self.away_team.name
-        )
-        away_form = self.away_team.form()
-        start_time = self.datetime.strftime('%H:%M')
-        return (
-            f'{home_msg} ({home_form}) vs {away_msg} ({away_form}) '
-            f'@ {start_time} ({self.competition})'
         )
     
     def result(self, team: Team):
@@ -258,42 +226,35 @@ class Fixture:
         return Image.alpha_composite(img, text_layer)
 
 
-def draw_active_fixtures(font_path, today_only=True):
-    seen_teams = []
+def get_next_team_fixture(team, today_only=True):
+    next_fix_url = f'https://api-football-v1.p.rapidapi.com/v2/fixtures/team/{team}/next/1'
 
-    for team in Fixture.BADGE_LOOKUPS.keys():
-        next_fix_url = f'https://api-football-v1.p.rapidapi.com/v2/fixtures/team/{team}/next/1'
+    fix_req = Request(next_fix_url, headers=HEADERS)
+    
+    fix_content = urlopen(fix_req).read()
+    
+    data = json.loads(fix_content)
+    
+    fixtures = data['api']['fixtures']
+    
+    if not fixtures:
+        return None
+    
+    fix = Fixture(fixtures[0])
 
-        fix_req = Request(next_fix_url, headers=HEADERS)
-        
-        fix_content = urlopen(fix_req).read()
-        
-        data = json.loads(fix_content)
-        
-        fixtures = data['api']['fixtures']
-        
-        if not fixtures:
-            continue
-        
-        fix = Fixture(fixtures[0])
-
-        home = fix.home_team.id
-        away = fix.away_team.id
-
-        if (home, away) in seen_teams:
-            continue
-
-        if fix.is_today or not today_only:
-            yield fix.draw_card(font_path=font_path)
-
-        seen_teams.append((home, away))
+    if fix.is_today or not today_only:
+        return fix
+    else:
+        return None
 
 
-def draw_competition_fixtures(font_path, league_id, form_count=0):
+def get_competition_fixtures(league_id, date='today'):
+    if date == 'today':
+        date_str = datetime.now().strftime('%Y-%m-%d')
+    else:
+        date_str = date.strftime('%Y-%m-%d')
 
-    date = datetime.now().strftime('%Y-%m-%d')
-
-    next_fix_url = f'https://api-football-v1.p.rapidapi.com/v2/fixtures/league/{league_id}/{date}'
+    next_fix_url = f'https://api-football-v1.p.rapidapi.com/v2/fixtures/league/{league_id}/{date_str}'
                      
     fix_req = Request(next_fix_url, headers=HEADERS)
     
@@ -301,7 +262,4 @@ def draw_competition_fixtures(font_path, league_id, form_count=0):
     
     data = json.loads(fix_content)
 
-    for f in data['api']['fixtures']:
-        fix = Fixture(f)
-
-        yield fix.draw_card(font_path=font_path, form_count=form_count)
+    return [Fixture(f) for f in data['api']['fixtures']]
