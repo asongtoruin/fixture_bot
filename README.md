@@ -41,13 +41,8 @@ API parameters should come from setting up an application with RapidAPI.
 The default set-up is to post at 8am every day. This is set right at the top
 of `bot.py`, so it should be easy to tweak if necessary.
 
-### Teams to track
-The tracked teams are defined as a class attribute of the `Fixture` class. 
-This... is a bit messy, in all honesty, but I just wanted to get something up 
-and running. `Fixture.BADGE_LOOKUPS` provides an equivalence between team IDs 
-used by API-Football and the custom emoji shortcodes used in the Discord server
-I run this bot in. You could alternatively set this to, say, format the teams 
-you're looking up as bold.
+### Teams / competitions to track
+Tracked teams and competitions are listed directly in `bot.py`.
 
 The easiest way I found to get the IDs for teams was to export all leagues for 
 country from the relevant API endpoint to JSON, then do the same thing for 
