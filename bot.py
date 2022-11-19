@@ -5,26 +5,40 @@ from io import BytesIO
 from discord import File
 from discord.ext import commands, tasks
 
+from code import FixtureBot
 from code.params import TARGET_CHANNEL_ID, TOKEN, FONT_PATH
-from code.fixtures import draw_competition_fixtures, Fixture
 
 
-bot = commands.Bot(
+bot = FixtureBot(
     command_prefix=commands.when_mentioned_or('fixturebot.', ), 
     help_command=None
 )
 
+bot.track_teams(
+    42,     # Arsenal
+    63,     # Leeds
+    1373,   # Leyton Orient
+    50,     # Manchester City
+    1351,   # Port Vale
+    41,     # Southampton
+    75,     # The neighbours
+)
 
-help_text = f'''IT'S THE EUROPEAN CHAMPIONSHIPS. GET EXCITED.
+bot.track_competitions(
+    4265,   # World Cup 2022
+)
+
+help_text = f'''I'm tracking a bunch of stuff now. It's complicated.
 '''
 
 POST_TIME = datetime.strptime('08:00', '%H:%M')
 
 @tasks.loop(hours=24)
 async def post_fixtures():
+    bot.get_fixtures()
     message_channel = bot.get_channel(TARGET_CHANNEL_ID)
     print(f"Got channel {message_channel} @{datetime.now()}")
-    for img in draw_competition_fixtures(font_path=FONT_PATH, league_id=403):
+    for img in bot.draw_fixtures(font_path=FONT_PATH):
         arr = BytesIO()
         img.save(arr, format='PNG')
         arr.seek(0)
