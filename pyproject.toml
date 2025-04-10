@@ -1,0 +1,59 @@
+[project]
+name = "fixture-bot"
+version = "0.1.0"
+description = "Bot for sending fixture updates to Discord"
+authors = [
+    {name = "Adam Ruszkowski",email = "adam.ruszkowski@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "discord.py (>=2.5.2,<3.0.0)",
+    "pillow (>=11.1.0,<12.0.0)",
+    "requests (>=2.32.3,<3.0.0)",
+    "pydantic (>=2.11.3,<3.0.0)",
+    "python-dotenv (>=1.1.0,<2.0.0)"
+]
+
+[tool.poetry]
+package-mode = false
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.11.4"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+    # pydocstyle
+    "D",
+]
+
+ignore = [
+    "D203", # "blank line before class", I think this looks bad and prefer D211
+    "D213", # "multiline summary second line" - I prefer D212 (i.e. forcing a short summary first line)
+]
+
+[tool.ruff.format]
+# Enable reformatting of code snippets in docstrings.
+docstring-code-format = true
+
+# Why would anyone use tabs?
+indent-style = "space"
+
+# *sigh* I guess I'm trying to be PEP-8 compliant
+quote-style = "double"
