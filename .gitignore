@@ -132,3 +132,4 @@ dmypy.json
 .vscode/
 params.py
 tests/cassettes
+fonts/

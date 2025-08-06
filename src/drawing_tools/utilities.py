@@ -1,3 +1,4 @@
+from pathlib import Path
 import urllib
 import urllib.request
 
@@ -100,3 +101,13 @@ def scale_from_url(url, x0, y0, x1, y1, blur_size=3):
     new_y0 = y0 +int((h-new_h)/2)
 
     return scaled, new_x0, new_y0
+
+def font_from_url(url) -> Path:
+    rel_path = urllib.parse.urlparse(url).path
+
+    local_path = Path("fonts") / rel_path.lstrip("/")
+    local_path.parent.mkdir(exist_ok=True, parents=True)
+    if not local_path.is_file():
+        urllib.request.urlretrieve(url, local_path)
+    return local_path
+
