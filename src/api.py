@@ -73,3 +73,14 @@ class API:
             input_model=input_models.TeamsInput,
             output_model=output_models.TeamsResponse,
         )
+    
+    def fixtures(
+        self, data: dict | input_models.FixturesInput
+    ) -> output_models.FixturesResponse:
+        return self._process_request(
+            data=data,
+            endpoint_name="fixtures",
+            request_method=requests.get,
+            input_model=input_models.FixturesInput,
+            output_model=output_models.FixturesResponse,
+        )

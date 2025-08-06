@@ -1,20 +1,20 @@
-from datetime import date
+from datetime import date as dt_date
 
-from pydantic import BaseModel, field_serializer, Field
+from pydantic import BaseModel, Field, field_serializer
 
 
-class FixtureInput(BaseModel):
+class FixturesInput(BaseModel):
     id: int | None = None
     live: str | None = None
-    date_: date | None = Field(serialization_alias="date", default=None)
+    date: dt_date | None = None
     league: int | None = None
     season: int | None = Field(ge=1000, le=9999, default=None)
     team: int | None = None
     last: int | None = Field(ge=1, le=99, default=None)
     next_: int | None = Field(ge=1, le=99, default=None, serialization_alias="next")
 
-    @field_serializer("date_")
-    def _serialize_date(self, dt: date, _info):
+    @field_serializer("date")
+    def _serialize_date(self, dt: dt_date, _info):
         return dt.strftime("%Y-%m-%d")
 
 
@@ -30,5 +30,5 @@ class TeamsInput(BaseModel):
 
 
 if __name__ == "__main__":
-    a = FixtureInput(date_="2024-01-01")
+    a = FixturesInput(date_="2024-01-01")
     print(a)
