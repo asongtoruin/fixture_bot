@@ -1,0 +1,149 @@
+from PIL import Image, ImageDraw
+
+from src.drawing_tools.utilities import TextDraw, scale_from_url
+from src.output_models import FixtureInfo
+from src.utils import ResultsCode
+
+FORM_COLOURS = {
+    ResultsCode.WIN: (85,172,238,255),
+    ResultsCode.DRAW: (253,203,88,255),
+    ResultsCode.LOSS: (221,46,68,255),
+    ResultsCode.UNKNOWN: (49,55,61,255)
+}
+
+DAY_COLOURS = {
+    0: (2, 8, 135, 255),
+    1: (1, 38, 34, 255),
+    2: (229, 83, 129, 255),
+    3: (20, 123, 49, 255),
+    4: (91, 78, 119, 255),
+    5: (243, 66, 19, 255),
+    6: (229, 83, 129, 255)
+}
+
+
+class FixtureCard:
+    def __init__(self, fixture: FixtureInfo, home_form: list[ResultsCode] | None = None, away_form: list[ResultsCode] | None = None):
+        self.fixture = fixture
+        self.home_form = home_form
+        self.away_form = away_form
+
+    def draw(
+        self, 
+        font_path, header_height=50, badge_size=150, pad=10,
+        inner_gap=60, form_outline=2, text_scale=10
+        ) -> Image.Image:
+        if self.home_form or self.away_form:
+            max_form_count = max(len(self.home_form), len(self.away_form))
+            form_size = int(badge_size / max_form_count)
+        else:
+            form_size = 0
+
+        image_width = 4*pad + 2*badge_size + inner_gap
+        image_height = 4*pad + header_height + badge_size + form_size
+
+        img = Image.new(
+            mode='RGBA', size=(image_width, image_height), color=(0, 0, 0, 0)
+        )
+        draw = ImageDraw.Draw(img)
+
+        # Separate text layer, scaled up for better antialiasing
+        text_layer = Image.new(
+            mode='RGBA', 
+            size=(image_width * text_scale, image_height * text_scale), 
+            color=(0, 0, 0, 0)
+        )
+        text_draw = TextDraw(text_layer)
+
+        # Header fill
+        h_colour = DAY_COLOURS.get(self.fixture.fixture.date.weekday(), DAY_COLOURS[0])
+        h_x0 = h_y0 = pad
+        h_x1 = image_width - pad
+        h_y1 = h_y0 + header_height
+        draw.rectangle(xy=[h_x0, h_y0, h_x1, h_y1], fill=h_colour, width=4)
+
+        # Header text
+        header = f'{self.fixture.league.name}\n{self.fixture.fixture.venue.name or ""} @ {self.fixture.fixture.date.strftime("%H:%M")}'
+        text_draw.align_text(
+            header, 
+            h_x0 * text_scale, (h_y0+5) * text_scale, 
+            h_x1 * text_scale, (h_y1-5) * text_scale, 
+            font_path=font_path, align='center'
+        )
+
+        # Home badge
+        hb_x0 = pad
+        hb_x1 = hb_x0 + badge_size
+        hb_y0 = h_y1 + pad
+        hb_y1 = hb_y0 + badge_size
+        badge, x, y = scale_from_url(
+            str(self.fixture.teams.home.logo), hb_x0, hb_y0, hb_x1, hb_y1
+        )
+        img.paste(badge, (x, y), badge.convert('RGBA'))
+
+        if form_size > 0:
+            # Home form
+            hf_x0 = hb_x0
+            hf_x1 = hb_x1
+            hf_y0 = hb_y1 + pad
+            hf_y1 = hf_y0 + form_size
+
+            for f in self.home_form:
+                hf_x1 = hf_x0 + form_size
+                hf_y1 = hf_y0 + form_size
+                draw.rectangle(
+                    xy=[hf_x0, hf_y0, hf_x1, hf_y1], 
+                    fill=FORM_COLOURS[f], outline=(0,0,0,0), width=form_outline
+                )
+                text_draw.align_text(
+                    f, 
+                    (hf_x0+2*form_outline)*text_scale, (hf_y0+2*form_outline)*text_scale, 
+                    (hf_x1-2*form_outline)*text_scale, (hf_y1-2*form_outline)*text_scale, 
+                    font_path=font_path, align='center', fill=(255, 255, 255, 100)
+                )
+                hf_x0 += form_size
+
+        # Away badge
+        ab_x0 = hb_x1 + 2*pad+ inner_gap
+        ab_x1 = ab_x0 + badge_size
+        ab_y0 = hb_y0
+        ab_y1 = hb_y1
+        badge, x, y = scale_from_url(
+            str(self.fixture.teams.away.logo), ab_x0, ab_y0, ab_x1, ab_y1
+        )
+        img.paste(badge, (x, y), badge.convert('RGBA'))
+
+        if form_size > 0:
+            # Away form
+            af_x0 = ab_x0
+            af_x1 = ab_x1
+            af_y0 = ab_y1 + pad
+            af_y1 = af_y0 + form_size
+
+            for f in self.away_form:
+                af_x1 = af_x0 + form_size
+                af_y1 = af_y0 + form_size
+                draw.rectangle(
+                    xy=[af_x0, af_y0, af_x1, af_y1], 
+                    fill=FORM_COLOURS[f], outline=(0,0,0,0), width=form_outline
+                )
+                text_draw.align_text(
+                    f, 
+                    (af_x0+2*form_outline)*text_scale, (af_y0+2*form_outline)*text_scale, 
+                    (af_x1-2*form_outline)*text_scale, (af_y1-2*form_outline)*text_scale, 
+                    font_path=font_path, align='center', fill=(255, 255, 255, 100)
+                )
+                af_x0 += form_size
+
+        # vs text
+        text_draw.align_text(
+            'VS', 
+            (hb_x1+pad) * text_scale, hb_y0 * text_scale, 
+            (ab_x0-pad) * text_scale, ab_y1 * text_scale, 
+            font_path=font_path, align='center', fill=(127, 127, 127, 80)
+        )
+
+        # Scale down image
+        text_layer = text_layer.resize((image_width, image_height))
+
+        return Image.alpha_composite(img, text_layer)
