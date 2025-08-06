@@ -1,10 +1,15 @@
 from datetime import datetime
 from os import PathLike
 
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, ConfigDict, HttpUrl
 
 
 class FileIOModel(BaseModel):
+    # Allow extra terms in the responses - I may have missed something in my encoding!
+    model_config = ConfigDict(
+        extra="allow",
+    )
+
     def to_file(self, file_path: PathLike):
         with open(file_path, "w") as output_path:
             output_path.write(self.model_dump_json(exclude_unset=True, indent=2))
