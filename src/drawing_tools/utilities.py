@@ -21,7 +21,9 @@ class TextDraw(ImageDraw.ImageDraw):
         )
         font = ImageFont.truetype(font=font_path, size=size)
         
-        w, h = self.textlength(text, font=font, **draw_dict)
+        l, t, r, b = self.textbbox((0, 0), text, font=font, **draw_dict)
+        w = r - l
+        h = b - t
         
         if ha == 'left':
             x = x0
@@ -50,8 +52,11 @@ class TextDraw(ImageDraw.ImageDraw):
         def fits(size):
             local_dict = {k: v for k, v in kwargs.items()}
             font = ImageFont.truetype(local_dict.pop('font'), size=size)
-            w, h = self.textlength(text, font=font, **local_dict)
+            # textbbox gives box coords left, top, right, bottom
+            l, t, r, b = self.textbbox((0, 0), text, font=font, **local_dict)
             
+            w = r - l
+            h = b - t
             return w <= max_w and h <= max_h
         
         upper = max_h
