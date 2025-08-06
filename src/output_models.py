@@ -3,6 +3,8 @@ from os import PathLike
 
 from pydantic import BaseModel, ConfigDict, HttpUrl
 
+from src.utils import ResultsCode
+
 
 class FileIOModel(BaseModel):
     # Allow extra terms in the responses - I may have missed something in my encoding!
@@ -62,6 +64,10 @@ class MatchStatus(FileIOModel):
     short: str
     elapsed: int | None
 
+    @property
+    def finished(self) -> bool:
+        return self.short in ("FT", "AET", "PEN")
+
 
 class SimpleVenue(FileIOModel):
     id: int | None
@@ -113,6 +119,23 @@ class FixtureInfo(FileIOModel):
     teams: FixtureTeams
     goals: dict
     score: dict
+
+    def result_for(self, team: BasicTeam) -> ResultsCode:
+        if not self.fixture.status.finished:
+            return ResultsCode.UNKNOWN
+        
+        if self.teams.home.winner is None:
+            return ResultsCode.DRAW
+        elif self.teams.home.winner:
+            if self.teams.home == team:
+                return ResultsCode.WIN
+            else:
+                return ResultsCode.LOSS
+        else:
+            if self.teams.away == team:
+                return ResultsCode.WIN
+            else:
+                return ResultsCode.LOSS
 
 
 class TeamsResponse(BaseResponse):
