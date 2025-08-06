@@ -4,15 +4,12 @@ from typing import TypeVar
 from urllib.parse import urljoin
 
 import requests
-from dotenv import load_dotenv
 from pydantic import BaseModel
 
 from src import input_models, output_models
 
 InputModel = TypeVar("InputModel", bound=BaseModel)
 OutputModel = TypeVar("OutputModel", bound=BaseModel)
-
-load_dotenv()
 
 
 class API:
