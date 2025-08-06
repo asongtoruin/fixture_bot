@@ -8,6 +8,12 @@ class FileIOModel(BaseModel):
         with open(file_path, "w") as output_path:
             output_path.write(self.model_dump_json(exclude_unset=True, indent=2))
 
+    @classmethod
+    def from_file(cls, file_path: PathLike):
+        with open(file_path) as input_path:
+            json_string = input_path.read()
+        return cls.model_validate_json(json_string)
+
 
 class Pagination(FileIOModel):
     current: int
