@@ -1,7 +1,7 @@
 import urllib
 import urllib.request
 
-from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageOps
+from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 
 
 class TextDraw(ImageDraw.ImageDraw):
@@ -20,7 +20,7 @@ class TextDraw(ImageDraw.ImageDraw):
         )
         font = ImageFont.truetype(font=font_path, size=size)
         
-        w, h = self.textsize(text, font=font, **draw_dict)
+        w, h = self.textlength(text, font=font, **draw_dict)
         
         if ha == 'left':
             x = x0
@@ -38,7 +38,7 @@ class TextDraw(ImageDraw.ImageDraw):
         elif va == 'centre':
             y = (y0 + y1 - h) / 2
         else:
-            print(v, 'OH NO')
+            print(w, 'OH NO')
         
         self.text(xy=(x, y), text=text, font=font, **kwargs)
         
@@ -49,7 +49,7 @@ class TextDraw(ImageDraw.ImageDraw):
         def fits(size):
             local_dict = {k: v for k, v in kwargs.items()}
             font = ImageFont.truetype(local_dict.pop('font'), size=size)
-            w, h = self.textsize(text, font=font, **local_dict)
+            w, h = self.textlength(text, font=font, **local_dict)
             
             return w <= max_w and h <= max_h
         
@@ -94,7 +94,7 @@ def scale_from_url(url, x0, y0, x1, y1, blur_size=3):
         new_h = h
         new_w = int(img_w * new_h / img_h)
 
-    scaled = img.resize((new_w, new_h), resample=Image.ANTIALIAS)
+    scaled = img.resize((new_w, new_h), resample=Image.Resampling.LANCZOS)
 
     new_x0 = x0 + int((w-new_w)/2)
     new_y0 = y0 +int((h-new_h)/2)
