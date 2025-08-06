@@ -1,31 +1,36 @@
 import asyncio
+import logging
 from datetime import datetime
 from io import BytesIO
+from os import getenv
 
-from discord import File
+from discord import File, Intents
 from discord.ext import commands, tasks
+from dotenv import load_dotenv
 
-from params import TARGET_CHANNEL_ID, TOKEN, FONT_PATH
-from fixtures import draw_active_fixtures, Fixture
+from draw_daily_fixtures import draw_daily_fixtures
 
+logger = logging.getLogger("discord")
+
+load_dotenv()
 
 bot = commands.Bot(
     command_prefix=commands.when_mentioned_or('fixturebot.', ), 
+    intents=Intents.default(),
     help_command=None
 )
 
 
-help_text = f'''I post fixtures for predefined teams at 8am each day.
+help_text = '''I post fixtures for predefined teams at 8am each day.
 
 __**Teams**__
-Fixtures are shown alphabetically for the teams I'm tracking. Those teams are:
-{', '.join(Fixture.BADGE_LOOKUPS.values())}
-If you want more teams adding, that's very possible :robot:
+Fixtures are shown alphabetically for the teams I'm tracking. If you want more 
+teams adding, that's very possible :robot:
 
 __**Form**__
 Form is shown by default for the past 5 matches for a team, in chronological 
-order. Form is shown across all competitions, and does not include penalties 
-(so, if a match goes to penalties it's recorded as a draw).
+order. Form is shown across all competitions, and does not (might not?) include 
+penalties (so, if a match goes to penalties it's recorded as a draw).
 
 The following colours are used:
 :blue_circle: - win
@@ -35,12 +40,14 @@ The following colours are used:
 '''
 
 POST_TIME = datetime.strptime('08:00', '%H:%M')
+TARGET_CHANNEL_ID = getenv("TARGET_CHANNEL_ID")
+TOKEN = getenv("TOKEN")
 
 @tasks.loop(hours=24)
 async def post_fixtures():
     message_channel = bot.get_channel(TARGET_CHANNEL_ID)
     print(f"Got channel {message_channel} @{datetime.now()}")
-    for img in draw_active_fixtures(font_path=FONT_PATH):
+    for img in draw_daily_fixtures(font_url="https://github.com/google/fonts/raw/refs/heads/main/ofl/comfortaa/Comfortaa%5Bwght%5D.ttf"):
         arr = BytesIO()
         img.save(arr, format='PNG')
         arr.seek(0)
@@ -53,9 +60,9 @@ async def time_wait():
     await bot.wait_until_ready()
 
     wait_time = (POST_TIME - datetime.now()).total_seconds() % (24*60*60)
-    print(f'Waiting {wait_time} seconds for scheduled posts')
+    logger.info(f'Waiting {wait_time} seconds for scheduled posts')
     await asyncio.sleep(wait_time)
-    print('Ready for scheduled posting!')
+    logger.info('Ready for scheduled posting!')
 
 
 @bot.command()
@@ -85,5 +92,10 @@ async def on_command_error(ctx, error):
             f'{ctx.author.mention} I don\'t know how to respond to that :robot:'
         )
 
-post_fixtures.start()
+@bot.event
+async def on_ready():
+    logger.info(f'We have logged in as {bot.user}')
+
+    post_fixtures.start()
+
 bot.run(TOKEN)
