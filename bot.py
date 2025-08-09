@@ -9,14 +9,18 @@ from discord.ext import commands, tasks
 from dotenv import load_dotenv
 
 from draw_daily_fixtures import draw_daily_fixtures
+from src.drawing_tools.utilities import font_from_url
 
 logger = logging.getLogger("discord")
 
 load_dotenv()
 
+intents = Intents.default()
+intents.message_content = True
+
 bot = commands.Bot(
     command_prefix=commands.when_mentioned_or('fixturebot.', ), 
-    intents=Intents.default(),
+    intents=intents,
     help_command=None
 )
 
@@ -40,14 +44,16 @@ The following colours are used:
 '''
 
 POST_TIME = datetime.strptime('08:00', '%H:%M')
-TARGET_CHANNEL_ID = getenv("TARGET_CHANNEL_ID")
+TARGET_CHANNEL_ID = int(getenv("TARGET_CHANNEL_ID"))
 TOKEN = getenv("TOKEN")
+FONT = font_from_url("https://github.com/google/fonts/raw/refs/heads/main/ofl/comfortaa/Comfortaa%5Bwght%5D.ttf")
+
 
 @tasks.loop(hours=24)
 async def post_fixtures():
     message_channel = bot.get_channel(TARGET_CHANNEL_ID)
-    print(f"Got channel {message_channel} @{datetime.now()}")
-    for img in draw_daily_fixtures(font_url="https://github.com/google/fonts/raw/refs/heads/main/ofl/comfortaa/Comfortaa%5Bwght%5D.ttf"):
+    logger.info(f"Got channel {message_channel} @{datetime.now()}")
+    for img in draw_daily_fixtures(font_path=FONT):
         arr = BytesIO()
         img.save(arr, format='PNG')
         arr.seek(0)
