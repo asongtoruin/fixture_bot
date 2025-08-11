@@ -8,7 +8,7 @@ from discord import File, Intents
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 
-from draw_daily_fixtures import draw_daily_fixtures
+from accumulate_daily_fixtures import accumulate_daily_fixtures
 from src.drawing_tools.utilities import font_from_url
 
 logger = logging.getLogger("discord")
@@ -53,12 +53,16 @@ FONT = font_from_url("https://github.com/google/fonts/raw/refs/heads/main/ofl/co
 async def post_fixtures():
     message_channel = bot.get_channel(TARGET_CHANNEL_ID)
     logger.info(f"Got channel {message_channel} @{datetime.now()}")
-    for img in draw_daily_fixtures(font_path=FONT):
-        arr = BytesIO()
-        img.save(arr, format='PNG')
-        arr.seek(0)
+    for card in accumulate_daily_fixtures():
+        try:
+            img = card.draw(font_path=FONT)
+            arr = BytesIO()
+            img.save(arr, format='PNG')
+            arr.seek(0)
 
-        await message_channel.send(file=File(arr, filename='card.png'))
+            await message_channel.send(file=File(arr, filename='card.png'))
+        except Exception:
+            await message_channel.send("Oops, there was an error here.")
 
 
 @post_fixtures.before_loop

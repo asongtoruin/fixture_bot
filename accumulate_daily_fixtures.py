@@ -6,7 +6,7 @@ from src.drawing_tools.card import FixtureCard
 from src.output_models import TeamInfo
 
 
-def draw_daily_fixtures(font_path: str, tracking_folder: Path = Path("tracked")):
+def accumulate_daily_fixtures(tracking_folder: Path = Path("tracked")):
     # Load in the teams we want to track
     teams_folder = tracking_folder / "teams"
     with_form = [TeamInfo.from_file(f) for f in (teams_folder / "with_form").glob("*.json")]
@@ -33,4 +33,4 @@ def draw_daily_fixtures(font_path: str, tracking_folder: Path = Path("tracked"))
         elif any(team in playing_teams for team in no_form):
             cards_to_draw.append(FixtureCard(fixture))
 
-    return [card.draw(font_path=font_path) for card in cards_to_draw]
+    return cards_to_draw
