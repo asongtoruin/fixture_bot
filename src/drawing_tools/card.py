@@ -63,7 +63,7 @@ class FixtureCard:
         draw.rectangle(xy=[h_x0, h_y0, h_x1, h_y1], fill=h_colour, width=4)
 
         # Header text
-        header = f'{self.fixture.league.name}\n{self.fixture.fixture.venue.name or ""} @ {self.fixture.fixture.date.strftime("%H:%M")}'
+        header = f'{self.fixture.league.name}\n{self.fixture.fixture.venue.name or ""} @ {self.fixture.fixture.localise_date().strftime("%H:%M")}'
         text_draw.align_text(
             header, 
             h_x0 * text_scale, (h_y0+5) * text_scale, 
