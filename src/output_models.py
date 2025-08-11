@@ -1,7 +1,8 @@
 from datetime import datetime
 from os import PathLike
+from zoneinfo import ZoneInfo
 
-from pydantic import BaseModel, ConfigDict, HttpUrl
+from pydantic import AwareDatetime, BaseModel, ConfigDict, HttpUrl
 
 from src.utils import ResultsCode
 
@@ -101,12 +102,14 @@ class Fixture(FileIOModel):
     id: int
     referee: str | None = None
     timezone: str
-    date: datetime
+    date: AwareDatetime
     timestamp: int
     periods: dict
     venue: SimpleVenue
     status: MatchStatus
 
+    def localise_date(self, tz: str = "Europe/London"):
+        return self.date.astimezone(ZoneInfo(tz))
 
 class FixtureTeams(FileIOModel):
     home: TeamResult
