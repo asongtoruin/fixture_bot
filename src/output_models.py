@@ -54,9 +54,9 @@ class TeamResult(BasicTeam):
 
 
 class TeamInfo(BasicTeam):
-    code: str
-    country: str
-    founded: int
+    code: str | None
+    country: str | None
+    founded: int | None
     national: bool
 
 
@@ -77,10 +77,10 @@ class SimpleVenue(FileIOModel):
 
 
 class VenueInfo(SimpleVenue):
-    address: str
-    capacity: int
-    surface: str
-    image: HttpUrl
+    address: str | None
+    capacity: int | None
+    surface: str | None
+    image: HttpUrl | None
 
 
 class IndividualTeamResponse(FileIOModel):
@@ -91,11 +91,11 @@ class IndividualTeamResponse(FileIOModel):
 class League(FileIOModel):
     id: int
     name: str
-    country: str
+    country: str | None
     logo: HttpUrl
     flag: HttpUrl | None
-    season: int
-    round: str
+    season: int | None
+    round: str | None
 
 
 class Fixture(FileIOModel):
@@ -103,8 +103,8 @@ class Fixture(FileIOModel):
     referee: str | None = None
     timezone: str
     date: AwareDatetime
-    timestamp: int
-    periods: dict
+    timestamp: int | None
+    periods: dict | None
     venue: SimpleVenue
     status: MatchStatus
 
@@ -121,7 +121,7 @@ class FixtureInfo(FileIOModel):
     league: League
     teams: FixtureTeams
     goals: dict
-    score: dict
+    score: dict | None
 
     def result_for(self, team: BasicTeam) -> ResultsCode:
         if not self.fixture.status.finished:
