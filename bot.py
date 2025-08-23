@@ -56,11 +56,17 @@ async def post_fixtures():
     for card in accumulate_daily_fixtures():
         try:
             img = card.draw(font_path=FONT)
+
+            # Grab the timestamp so we can post relative times with the images (love u Matt)
+            timestamp = card.fixture.fixture.localise_date().timestamp()
+
+            text = f"(<t:{timestamp:.0f}:R>)"
+
             arr = BytesIO()
             img.save(arr, format='PNG')
             arr.seek(0)
 
-            await message_channel.send(file=File(arr, filename='card.png'))
+            await message_channel.send(text, file=File(arr, filename='card.png'))
         except Exception:
             await message_channel.send("Oops, there was an error here.")
 
