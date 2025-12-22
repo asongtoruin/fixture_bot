@@ -91,11 +91,17 @@ class IndividualTeamResponse(FileIOModel):
 class League(FileIOModel):
     id: int
     name: str
-    country: str | None
+    country: str | None = None
     logo: HttpUrl
-    flag: HttpUrl | None
-    season: int | None
-    round: str | None
+    flag: HttpUrl | None = None
+    season: int | None = None
+    round: str | None = None
+
+    def __eq__(self, other):
+        if not isinstance(other, League):
+            return False
+        
+        return self.id == other.id
 
 
 class Fixture(FileIOModel):

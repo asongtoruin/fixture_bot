@@ -3,7 +3,7 @@ from pathlib import Path
 
 from src.api import API
 from src.drawing_tools.card import FixtureCard
-from src.output_models import TeamInfo
+from src.output_models import TeamInfo, League
 
 
 def accumulate_daily_fixtures(tracking_folder: Path = Path("tracked")):
@@ -11,6 +11,9 @@ def accumulate_daily_fixtures(tracking_folder: Path = Path("tracked")):
     teams_folder = tracking_folder / "teams"
     with_form = [TeamInfo.from_file(f) for f in (teams_folder / "with_form").glob("*.json")]
     no_form = [TeamInfo.from_file(f) for f in (teams_folder / "no_form").glob("*.json")]
+
+    leagues_folder = tracking_folder / "leagues"
+    leagues = [League.from_file(f) for f in leagues_folder.glob("*.json")]
 
     # Set up the API object
     api = API()
@@ -30,7 +33,7 @@ def accumulate_daily_fixtures(tracking_folder: Path = Path("tracked")):
 
             cards_to_draw.append(FixtureCard(fixture, home_form=home_form, away_form=away_form))
 
-        elif any(team in playing_teams for team in no_form):
+        elif any(team in playing_teams or fixture.league in leagues for team in no_form):
             cards_to_draw.append(FixtureCard(fixture))
 
     return cards_to_draw
