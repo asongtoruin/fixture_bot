@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 from src.api import API
@@ -17,11 +17,20 @@ def accumulate_daily_fixtures(tracking_folder: Path = Path("tracked")):
 
     # Set up the API object
     api = API()
-    # Get today's fixtures, and loop through to figure out what to draw
-    active_fixtures = api.fixtures({"date": datetime.now().date()})
+    # Get today and tomorrow's fixtures, and loop through to figure out what to draw
+    now = datetime.now()
+    now_timestamp = now.astimezone(timezone.utc).timestamp()
+    tomorrow = now + timedelta(days=1)
+    tomorrow_timestamp = tomorrow.astimezone(timezone.utc).timestamp()
+
+    today_fixtures = api.fixtures({"date": now.date()})
+    tomorrow_fixtures = api.fixtures({"date": tomorrow.date()})
     cards_to_draw = []
 
-    for fixture in active_fixtures.response:
+    for fixture in today_fixtures.response + tomorrow_fixtures.response:
+        # Skip any fixtures not in the next 24 hours
+        if not (fixture.timestamp >= now_timestamp and fixture.timestamp < tomorrow_timestamp):
+            continue
         playing_teams = (fixture.teams.home, fixture.teams.away)
         if any(team in playing_teams for team in with_form):
             home_form_resp = api.fixtures({"team": fixture.teams.home.id, "last": 10})
