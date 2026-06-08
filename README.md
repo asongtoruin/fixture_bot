@@ -52,3 +52,37 @@ you're looking up as bold.
 The easiest way I found to get the IDs for teams was to export all leagues for 
 country from the relevant API endpoint to JSON, then do the same thing for 
 relevant leagues.
+
+
+# Updating the container
+Two commands to build and then run:
+
+```shell
+docker build --tag "fixture_bot" .
+docker run -d --name fixture_bot fixture_bot
+```
+
+If we want to re-run (e.g. with new code / tracking), we need to first stop and remove the existing container. So first:
+
+```shell
+docker ps
+```
+
+Will tell us running containers. Keep an eye on the `CONTAINER ID`. Next we run:
+
+```shell
+docker stop fixture_bot
+docker rm <CONTAINER ID>
+```
+
+
+We'll need to make sure required files are also in place - notably, `/tracked`, `fonts` and `.env`. Could we simplify this? Yeah, probably
+
+
+```python
+example_datetime = datetime(2025, 8, 9, 17, tzinfo=None)
+
+await ctx.send(
+    f'{ctx.author.mention} boop :robot: <t:{example_datetime.timestamp():.0f}:R>'
+)
+```
