@@ -29,7 +29,7 @@ def accumulate_daily_fixtures(tracking_folder: Path = Path("tracked")):
 
     for fixture in today_fixtures.response + tomorrow_fixtures.response:
         # Skip any fixtures not in the next 24 hours
-        if not (fixture.timestamp >= now_timestamp and fixture.timestamp < tomorrow_timestamp):
+        if not (fixture.fixture.timestamp >= now_timestamp and fixture.fixture.timestamp < tomorrow_timestamp):
             continue
         playing_teams = (fixture.teams.home, fixture.teams.away)
         if any(team in playing_teams for team in with_form):
